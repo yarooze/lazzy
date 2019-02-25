@@ -110,13 +110,20 @@
                         self.log("Cannot load loader frame!", CONST.ERROR);
                         return;
                     }
-                    
-                    
+
+                    //lazzy_struct_json
+                    self.elementStructureJson = document.getElementById("lazzy_struct_json");
+                    if (!self.elementStructureJson) {
+                        self.log("Cannot load structure json element!", CONST.ERROR);
+                        return;
+                    }
+
+
                     self.elementStructure = document.getElementById("lazzy_struct");
                     if (!self.elementStructure) {
                         self.log("Cannot load structure element!", CONST.ERROR);
                         return;
-                    }                    
+                    }
                     self.initStruct();
                     
                     self.elementNodeData = document.getElementById("node_data");
@@ -142,17 +149,7 @@
                 initStruct: function () {
                     var self = LAZZY;
 
-                    $(self.elementStructure)
-                        .on('select_node.jstree', function (e, data) {
-                            //changed
-                            var i, j, r = [], selected_node;
-                            for(i = 0, j = data.selected.length; i < j; i++) {
-                                selected_node = data.instance.get_node(data.selected[i]);
-                              r.push(selected_node.id + ": " + selected_node.text);
-                            }
-                            $(self.elementNodeData).html('Selected: ' + r.join(', '));
-                        })
-                        .jstree({
+                    var structJSON = {
                         "plugins" : [
                             //"checkbox",
                             "contextmenu",
@@ -160,13 +157,14 @@
                             //"massload",
                             //"search",
                             //"sort",
-                            //"state",
+                            "state",
                             //"types",
                             //"unique",
                             //"wholerow",
                             //"changed",
                             //"conditionalselect"
                         ],
+                        "state" : { "key" : "lazzy_structure" },
                         'core' : {
                             "multiple" : false,
                             "animation" : 1,
@@ -177,21 +175,56 @@
                                     'text': 'Simple root node',
                                 },
                                 {
-                                 'text' : 'Root node 2',
-                                 'state' : {
-                                   'opened' : true,
-                                   'selected' : true
-                                 },
-                                 'children' : [
-                                   { 
-                                       'text' : 'Child 1' 
-                                   },
-                                   'Child 2'
-                                 ]
+                                    'text' : 'Root node 2',
+                                    'state' : {
+                                        'opened' : true,
+                                        'selected' : true
+                                    },
+                                    'children' : [
+                                        {
+                                            'text' : 'Child 1'
+                                        },
+                                        'Child 2'
+                                    ]
                                 }
-                            ]
+                            ],
+                            '_data': [{"id":"12345","text":"Simple root node","parent":"#"},{"id":"#","parent":null},{"id":"j1_3","text":"Child 1","parent":"j1_2"},{"id":"j1_4","text":"Child 2","parent":"j1_2"},{"id":"j1_2","text":"Root node 2","parent":"#"}]
                         },
-                    });
+                    };
+
+                    $(self.elementStructure)
+                        .on('select_node.jstree', function (e, data) {
+                            //changed
+                            var i, j, r = [], selected_node;
+                            for(i = 0, j = data.selected.length; i < j; i++) {
+                                selected_node = data.instance.get_node(data.selected[i]);
+                              r.push(selected_node.id + ": " + selected_node.text);
+                            }
+                            $(self.elementNodeData).html('Selected: ' + r.join(', '));
+                        })
+                        .on('changed.jstree', function (e, data) {
+                            var data = {},
+                                node = {},
+                                nodes = [];
+                            for (var idx in self.structure._model.data) {
+                                data = self.structure._model.data[idx];
+                                node = data;
+                                /* {
+                                    "id": data.id,
+                                    "text": data.text,
+                                    "children": data.children,
+                                    "parent": data.parent
+                                }; */
+
+                                nodes.push(node);
+                            }
+
+                            self.elementStructureJson.value = JSON.stringify(nodes);
+                        })
+                        .jstree(structJSON);
+
+                    self.structure = $.jstree.reference("lazzy_struct");
+
                 },
                 
                 loadTemplates: function (templates) {
