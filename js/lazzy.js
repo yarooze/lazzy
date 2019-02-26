@@ -17,37 +17,37 @@
                 console.error("LAZZY is empty!");
                 return null;
             }
+            self.lazzy = lazzy;
 
             self.element = document.getElementById(id);
             if (!self.element) {
-                lazzy.log("Frame [" + id + "] is empty!", CONST.ERROR);
+                self.lazzy.log("Frame [" + id + "] is empty!", CONST.ERROR);
                 return null;
             }
 
             lazzy.frames[id] = self;
 
-            self.setHTML = function (html) {
-                self.element.contentWindow.document.open();
-                self.element.contentWindow.document.write(html);
-                self.element.contentWindow.document.close();
-            }
-
-            self.setSrc = function (src, cb) {
-                self.element.src = src;
-                cb();
-            }
-
-            self.getContent = function() {
-                var doc = self.element.contentDocument || self.element.contentWindow.document;
-                lazzy.log(doc.documentElement.innerHTML);
-                return doc.documentElement.innerHTML; //self.element.contentWindow.document.documentElement.innerHTML;
-            };
-
             // document.createElement('iframe');
 
             return self;
         }
-
+        Frame.prototype.setHTML = function (html) {
+            var self = this;
+            self.element.contentWindow.document.open();
+            self.element.contentWindow.document.write(html);
+            self.element.contentWindow.document.close();
+        };
+        Frame.prototype.setSrc = function (src, cb) {
+            var self = this;
+            self.element.src = src;
+            cb();
+        };
+        Frame.prototype.getContent = function() {
+            var self = this;
+            var doc = self.element.contentDocument || self.element.contentWindow.document;
+            self.lazzy.log(doc.documentElement.innerHTML);
+            return doc.documentElement.innerHTML; //self.element.contentWindow.document.documentElement.innerHTML;
+        };
 
         function Template(id, options, lazzy) {
             var self = this,
